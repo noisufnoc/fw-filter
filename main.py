@@ -92,9 +92,10 @@ def UrlUpdate(url,settings):
         print "url filter edit failed"
         return child.after
 
-    child.sendline('set thing')
-    child.sendline('set otherthing')
-
+    child.sendline('set action block')
+    child.sendline('set type regex')
+    child.sendline('end')
+    
 
 def UrlFix(url):
     #Housekeeping
