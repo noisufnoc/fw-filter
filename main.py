@@ -4,6 +4,8 @@ __author__ = 'eknegg'
 import pexpect
 import sys
 from getpass import getpass
+import re
+
 
 USAGE = '''fw-url_filter user url'''
 COMMAND_PROMPT = '[$#] '
@@ -80,23 +82,16 @@ def UrlUpdate(url,settings):
         print "config entries  failed"
         return child.after
 
-    child.sendline('edit url')
+    child.sendline('edit settings')
     i = child.expect('entries')
     if 0 != 1:
         print "url filter edit failed"
         return child.after
 
 
-if  0 != i:
-    print "url filter edit failed"
-    sys.exit(1)
-        print 'vdom fw'
-        sys.exit(1)
-print sys.argv
-
 def Urlfix(url):
     #place where i sanitize url input
-    print "ham"
+
 
 
 #get pass is in the loop host for loop due to rsa /differeing credentials per host.
