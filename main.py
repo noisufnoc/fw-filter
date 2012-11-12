@@ -94,7 +94,7 @@ def UrlUpdate(url,settings):
 
     child.sendline('set thing')
     child.sendline('set otherthing')
-    
+
 
 def UrlFix(url):
     #Housekeeping
@@ -147,16 +147,16 @@ else:
 
 #get pass is in the loop host for loop due to rsa /differeing credentials per host.
 
-for host in firewall[0:]:
-    if host[5] == 0:
-        print host[0] + "is disabled."
-        continue
-    print "Logging into  "+ host[0]
-    password = getpass(prompt="Password please")
-    child = Login(host[1],sys.argv[1],password)
-    if child == None:
-        print 'Could not login to host:', sys.argv[1]
-        sys.exit(1)
+    for host in firewall[0:]:
+        if host[5] == 0:
+            print host[0] + "is disabled."
+            continue
+        print "Logging into  "+ host[0]
+        password = getpass(prompt="Password please")
+        child = Login(host[1],sys.argv[1],password)
+        if child == None:
+            print 'Could not login to host:', sys.argv[1]
+            sys.exit(1)
 
 
     print 'updating url'
