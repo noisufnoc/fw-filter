@@ -54,6 +54,10 @@ def Login(host,user,password):
     return child
 
 def UrlUpdate(url,settings):
+    if url == 1:
+        Do
+
+
     #are we working with a vdom enabled firewall?
     if settings[4] == 1:
         child.sendline('config vdom')
@@ -82,16 +86,63 @@ def UrlUpdate(url,settings):
         print "config entries  failed"
         return child.after
 
-    child.sendline('edit settings')
-    i = child.expect('entries')
+    child.sendline('edit .*'+ url +'.*')
+    i = child.expect(url)
     if 0 != 1:
         print "url filter edit failed"
         return child.after
 
+    child.sendline('set thing')
+    child.sendline('set otherthing')
+    
 
-def Urlfix(url):
-    #place where i sanitize url input
+def UrlFix(url):
+    #Housekeeping
 
+    controlled_strings = set(['zappos', '6pm', 'google'])
+    splitdomain =  url.split('.')
+
+    p = re.compile('^(?=.{4,255}$)([a-zA-Z0-9][a-zA-Z0-9-]{,61}[a-zA-Z0-9]\.)+[a-zA-Z0-9]{2,4}$')
+    d = p.match(url)
+
+    if d:
+        print 'Match found: ', d.group()
+    else:
+        print "input fail\n"
+        return 1
+
+
+    print 'Begin domain tests'
+
+
+    #Making sure it is not one of the controlled domains.
+
+    for dpart in splitdomain:
+
+        if dpart in  controlled_strings:
+
+            print  "domain is controlled and can not be blocked\n"
+            return 1
+    print "domain is valid\n"
+
+    #Passed sanitization and controlled domain test. Split the domain and make sure there are less then 3 options.
+
+    if len(splitdomain) >= 3:
+        #print "domain failed length check\n"
+        del splitdomain[0]
+        x  ='.'.join(splitdomain)
+        return x
+    return url
+
+
+#check the url, destry or validate
+
+safeurl = UrlFix(sys.argv[2])
+
+if safeurl == 1:
+     print "Url is fail."
+     sys.exit(1)
+else:
 
 
 #get pass is in the loop host for loop due to rsa /differeing credentials per host.
@@ -109,6 +160,6 @@ for host in firewall[0:]:
 
 
     print 'updating url'
-    p = UrlUpdate(sys.argv[3],host)
+    p = UrlUpdate (safeurl,host)
 
 print "done"

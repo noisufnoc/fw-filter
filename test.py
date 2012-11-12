@@ -10,7 +10,10 @@ url4 = "www.ham.com"
 
 
 def validate(url):
+    #Housekeeping
+
     controlled_strings = set(['zappos', '6pm', 'google'])
+    splitdomain =  url.split('.')
 
     p = re.compile('^(?=.{4,255}$)([a-zA-Z0-9][a-zA-Z0-9-]{,61}[a-zA-Z0-9]\.)+[a-zA-Z0-9]{2,4}$')
     d = p.match(url)
@@ -22,25 +25,20 @@ def validate(url):
         return 1
 
 
-    splitdomain =  url.split('.')
-
-    #could not find a good way to test for the prefixed www. so i test for length
-    #and reject if it is not in the correct format so lazy am i
     print 'Begin domain tests'
-
-    #if len(url.rsplit('.')) >3:
-     #   print "domain failed length check"
 
 
     #Making sure it is not one of the controlled domains.
 
     for dpart in splitdomain:
-        #print dpart +"hello"
+
         if dpart in  controlled_strings:
 
             print  "domain is controlled and can not be blocked\n"
             return 1
     print "domain is valid\n"
+
+    #Passed sanitization and controlled domain test. Split the domain and make sure there are less then 3 options.
 
     if len(splitdomain) >= 3:
         #print "domain failed length check\n"
