@@ -14,6 +14,10 @@ TERMINAL_TYPE = 'vt100'
 SSH_NEWKEY = r'Are you sure you want to continue connecting \(yes/no\)\?'
 
 
+#need a backstop * policy on all the webfilter policies.
+
+
+
 #settings are stored i lists  name,ip,prompt,webfilter,vdom_state,enabled
 #0name is Fw-working name
 #1 ip
@@ -22,7 +26,7 @@ SSH_NEWKEY = r'Are you sure you want to continue connecting \(yes/no\)\?'
 #4vdom state = 1 for vdoms enbled , 0 for non vdom
 #5device enabled status
 firewall =[["core1","192.168.1.1","core-1",1,"0",1],
-          ["core2","192.168.1.1","core-1",3,"0",1],
+          ["core2","192.168.1.34","core-1",3,"0",1],
           ["core1","192.168.1.1","core-8",4,"0",0]]
 
 
@@ -33,9 +37,10 @@ def Login(host,user,password):
 
     i = child.expect([pexpect.TIMEOUT, SSH_NEWKEY, '[Pp]assword:'])
     if i == 0: #zomg timeout
-        print 'Error!'
+        print 'Unable to connect to'+ host
         print child.before, child.after
-        sys.exit (1)
+        return child.after
+
 
     if i == 1: #Why hello. This seems to be our first meetings(accept)
         child.sendline ('yes')
@@ -55,7 +60,7 @@ def Login(host,user,password):
 
 def UrlUpdate(url,settings):
     if url == 1:
-        Do
+        print "ham"
 
 
     #are we working with a vdom enabled firewall?
@@ -72,25 +77,27 @@ def UrlUpdate(url,settings):
     i = child.expect('urlfilter')
     if 0 != i:
         print "config webfilter urlfilter failed"
-        return child.after
+        #return child.after
 
-    child.sendline('edit'+settings[3])
-    i = child.expect(settings[3])
+    child.sendline('edit '+ str(settings[3]))
+    i = child.expect(str(settings[3]))
     if  0 != i:
         print "url filter edit failed"
-        return child.after
+        #return child.after
 
     child.sendline('config entries')
     i = child.expect('entries')
     if 0 != i:
-        print "config entries  failed"
-        return child.after
+        print "config entries failed"
+        #return child.after
 
     child.sendline('edit .*'+ url +'.*')
-    i = child.expect(url)
+    i = child.expect('.+')
     if 0 != 1:
-        print "url filter edit failed"
-        return child.after
+        print "url add failed"
+        #return child.after
+
+
 
     child.sendline('set action block')
     child.sendline('set type regex')
@@ -153,14 +160,15 @@ else:
             print host[0] + "is disabled."
             continue
         print "Logging into  "+ host[0]
-        password = getpass(prompt="Password please")
+        password = getpass(prompt="Password please: ")
         child = Login(host[1],sys.argv[1],password)
         if child == None:
             print 'Could not login to host:', sys.argv[1]
-            sys.exit(1)
+            continue
 
 
-    print 'updating url'
-    p = UrlUpdate (safeurl,host)
 
+        print 'updating url'
+        p = UrlUpdate (safeurl,host)
+        print p
 print "done"
