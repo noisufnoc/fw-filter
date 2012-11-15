@@ -25,8 +25,8 @@ SSH_NEWKEY = r'Are you sure you want to continue connecting \(yes/no\)\?'
 #3webfilter in fortinet are broken into id's
 #4vdom state = 1 for vdoms enbled , 0 for non vdom
 #5device enabled status
-firewall =[["core1","192.168.1.1","core-1",1,"0",1],
-          ["core2","192.168.1.34","core-1",3,"0",1],
+firewall =[["core1","70.170.98.177","core-1",1,"0",1],
+          ["core2","70.170.98.177","core-1",3,"0",1],
           ["core1","192.168.1.1","core-8",4,"0",0]]
 
 
@@ -71,7 +71,7 @@ def UrlUpdate(url,settings):
         if 0 != i:
             print "This is the place where we bail out if things are not going well"
             return child.after
-
+    print settings
     #i = child.expect(['command parse error',COMMAND_PROMPT] )
     child.sendline('config webfilter urlfilter')
     i = child.expect('urlfilter')
@@ -92,16 +92,17 @@ def UrlUpdate(url,settings):
         #return child.after
 
     child.sendline('edit .*'+ url +'.*')
-    i = child.expect('.+')
-    if 0 != 1:
+    i = child.expect(url)
+    #print i
+    if 0 != i:
         print "url add failed"
-        #return child.after
-
-
-
-    child.sendline('set action block')
-    child.sendline('set type regex')
-    child.sendline('end')
+        #print child.after
+        #print child.before
+    else:
+        print "i love this"
+        child.sendline('set action block')
+        child.sendline('set type regex')
+        child.sendline('end')
     
 
 def UrlFix(url):
