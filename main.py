@@ -25,20 +25,20 @@ SSH_NEWKEY = r'Are you sure you want to continue connecting \(yes/no\)\?'
 #3webfilter in fortinet are broken into id's
 #4vdom state = 1 for vdoms enbled , 0 for non vdom
 #5device enabled status
-firewall =[["core1","70.170.98.177","core-1",1,"0",1],
-          ["core2","70.170.98.177","core-1",3,"0",1],
+firewall =[["core1","192.168.1.1","core-1",1,"0",1],
+          ["core2","192.168.1.1","core-1",3,"0",1],
           ["core1","192.168.1.1","core-8",4,"0",0]]
 
 
-
+fout = file('mylog.txt','w')
 def Login(host,user,password):
     child = pexpect.spawn('ssh -l %s %s '%(user, host))
-    child.logfile = sys.stdout
+    child.logfile = fout
 
     i = child.expect([pexpect.TIMEOUT, SSH_NEWKEY, '[Pp]assword:'])
     if i == 0: #zomg timeout
         print 'Unable to connect to'+ host
-        print child.before, child.after
+        #print child.before, child.after
         return child.after
 
 
@@ -46,7 +46,7 @@ def Login(host,user,password):
         child.sendline ('yes')
         child.expect ('[Pp]assword: ')
     child.sendline(password)
-    print "pass sent"
+    print "Checking Username and Password"
     # Now we are either at the command prompt or
     # the login process is asking for our terminal type.
     i = child.expect (['Permission denied', TERMINAL_PROMPT, COMMAND_PROMPT])
@@ -61,8 +61,6 @@ def Login(host,user,password):
 def UrlUpdate(url,settings):
     if url == 1:
         print "ham"
-
-
     #are we working with a vdom enabled firewall?
     if settings[4] == 1:
         child.sendline('config vdom')
@@ -71,7 +69,7 @@ def UrlUpdate(url,settings):
         if 0 != i:
             print "This is the place where we bail out if things are not going well"
             return child.after
-    print settings
+    #print settings
     #i = child.expect(['command parse error',COMMAND_PROMPT] )
     child.sendline('config webfilter urlfilter')
     i = child.expect('urlfilter')
@@ -92,18 +90,25 @@ def UrlUpdate(url,settings):
         #return child.after
 
     child.sendline('edit .*'+ url +'.*')
-    i = child.expect(url)
+    i = child.expect('.* ')
     #print i
     if 0 != i:
         print "url add failed"
         #print child.after
         #print child.before
     else:
-        print "i love this"
+        print "i love this part"
         child.sendline('set action block')
         child.sendline('set type regex')
+
+    child.sendline('next')
+    i = child.expect('entries')
+    if 0 != i:
+        print 'Unable to move object, this may or may not be bad'
+    else:
+        child.sendline('move .*'+url+'.* before '+'.*')
         child.sendline('end')
-    
+        print 'edit complete'
 
 def UrlFix(url):
     #Housekeeping
@@ -158,9 +163,16 @@ else:
 
     for host in firewall[0:]:
         if host[5] == 0:
-            print host[0] + "is disabled."
+            print "\n"
+            print "################################################################"
+            print host[0] + " is disabled."
+            print "################################################################"
             continue
-        print "Logging into  "+ host[0]
+
+        print "\n"
+        print "################################################################"
+        print "Logging into: "+ host[0] + ' to block ' +    safeurl
+        print "################################################################"
         password = getpass(prompt="Password please: ")
         child = Login(host[1],sys.argv[1],password)
         if child == None:
@@ -171,5 +183,6 @@ else:
 
         print 'updating url'
         p = UrlUpdate (safeurl,host)
-        print p
+        #print p
+
 print "done"
