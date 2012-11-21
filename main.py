@@ -25,8 +25,8 @@ SSH_NEWKEY = r'Are you sure you want to continue connecting \(yes/no\)\?'
 #3webfilter in fortinet are broken into id's
 #4vdom state = 1 for vdoms enbled , 0 for non vdom
 #5device enabled status
-firewall =[["core1","192.168.1.1","core-1",1,"0",1],
-          ["core2","192.168.1.1","core-1",3,"0",1],
+firewall =[["core1","70.170.98.177","core-1",1,"0",1],
+          ["core2","192.168.1.1","core-1",3,"0",0],
           ["core1","192.168.1.1","core-8",4,"0",0]]
 
 
@@ -35,7 +35,7 @@ def Login(host,user,password):
     child = pexpect.spawn('ssh -l %s %s '%(user, host))
     child.logfile = fout
 
-    i = child.expect([pexpect.TIMEOUT, SSH_NEWKEY, '[Pp]assword:'])
+    i = child.expect([pexpect.TIMEOUT, SSH_NEWKEY, '[Pp]assword:'],timeout=300)
     if i == 0: #zomg timeout
         print 'Unable to connect to'+ host
         #print child.before, child.after
@@ -110,6 +110,11 @@ def UrlUpdate(url,settings):
         child.sendline('end')
         print 'edit complete'
 
+def _Checkpos(settings):
+    child.sendline('show webfilter urlfilter '+ str(settings[3]))
+    x = child.expect(pexpect.EOF)
+    return x
+
 def UrlFix(url):
     #Housekeeping
 
@@ -183,6 +188,8 @@ else:
 
         print 'updating url'
         p = UrlUpdate (safeurl,host)
+        print 'Lets try validating:'
+        print _Checkpos(host)
         #print p
 
 print "done"
